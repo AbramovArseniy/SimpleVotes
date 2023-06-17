@@ -3,6 +3,7 @@ module github.com/AbramovArseniy/SimpleVotes
 go 1.20
 
 require (
+	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/jackc/pgx/v5 v5.4.0
 )
