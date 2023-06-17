@@ -3,7 +3,7 @@ package storage
 import (
 	"errors"
 
-	"github.com/AbramovArseniy/Voting/internal/types"
+	"github.com/AbramovArseniy/SimpleVotes/internal/types"
 )
 
 var (

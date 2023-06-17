@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/AbramovArseniy/Voting/internal/storage"
-	"github.com/AbramovArseniy/Voting/internal/types"
+	"github.com/AbramovArseniy/SimpleVotes/internal/storage"
+	"github.com/AbramovArseniy/SimpleVotes/internal/types"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/golang-migrate/migrate/v4"

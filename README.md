@@ -1,1 +1,1 @@
-# Voting
+# SimpleVotes
