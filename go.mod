@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/go-chi/chi/v5 v5.0.8
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/jackc/pgx/v5 v5.4.0
 )
