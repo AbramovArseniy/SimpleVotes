@@ -12,7 +12,7 @@ type Config struct {
 	DBAddress string `env:"DATABASE_URI"`
 }
 
-func New() *Config {
+func NewConfig() *Config {
 	var cfg Config
 
 	flag.StringVar(&cfg.Address, "a", "127.0.0.1:8080", "set server listening address")
