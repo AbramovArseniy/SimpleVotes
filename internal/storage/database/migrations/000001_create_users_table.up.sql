@@ -1,0 +1,6 @@
+CREATE TABLE users(
+    id SERIAL UNIQUE
+    login VARCHAR(256) UNIQUE NOT NULL
+    password VARCHAR UNIQUE NOT NULL
+    PRIMARY KEY(id)
+)
