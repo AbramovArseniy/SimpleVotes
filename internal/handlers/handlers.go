@@ -138,7 +138,7 @@ func (h *Handler) PostQuestionHandler(w http.ResponseWriter, r *http.Request) {
 	var q = types.Question{
 		Text:    r.PostForm.Get("Question"),
 		Type:    types.QuestionType(r.PostForm.Get("Question type")),
-		Options: make([]string, 10),
+		Options: make([]string, 0),
 		UserID:  curUser.Id,
 	}
 	cnt := 1

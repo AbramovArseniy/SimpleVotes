@@ -3,7 +3,6 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/AbramovArseniy/SimpleVotes/internal/storage"
@@ -67,7 +66,6 @@ func (a *Auth) GetCurUserInfo(r *http.Request) (types.User, error) {
 		return types.User{}, ErrNotAuthorized
 	}
 	login, ok := token.Get("login")
-	log.Println(id)
 	if !ok {
 		return types.User{}, ErrNotAuthorized
 	}
