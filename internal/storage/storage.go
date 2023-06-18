@@ -17,7 +17,7 @@ type Storage interface {
 	SaveAnswer(types.Answer) error
 	GetPercentages(types.Question) ([]int, error)
 	GetQuestion(id int) (types.Question, error)
-	RegisterUser(types.User) error
+	RegisterUser(*types.User) error
 	GetUserByLogin(login string) (types.User, error)
 	GetUserById(id int) (types.User, error)
 	GetQuestionsByUser(id int) ([]types.Question, error)

@@ -23,7 +23,7 @@ const (
 	GetPopularQuestionsStmt  = `SELECT question_id, COUNT(user_id) as cnt_usr, question.text as text FROM answers LEFT JOIN questions ON questions.id = answers.question_id ORDERED BY cnt_usr DESC`
 	GetAllAnswersStmt        = `SELECT COUNT(*) FROM answers WHERE question_id=$1`
 	SaveAnswerStmt           = `INSERT INTO anwers (question_id, options, user_id) VALUES($1, $2, $3)`
-	RegisterUserStmt         = `INSERT INTO users (login, password) VALUES ($1, $2)`
+	RegisterUserStmt         = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id`
 )
 
 type Database struct {
@@ -134,11 +134,11 @@ func (db *Database) GetQuestion(id int) (types.Question, error) {
 	return question, nil
 }
 
-func (db *Database) RegisterUser(u types.User) error {
+func (db *Database) RegisterUser(u *types.User) error {
 	if err := u.GeneratePasswordHash(); err != nil {
 		return fmt.Errorf("cannot generate password hash: %w", err)
 	}
-	_, err := db.DB.Query(RegisterUserStmt, u.Login, u.Password)
+	err := db.DB.QueryRow(RegisterUserStmt, u.Login, u.Password).Scan(&u.Id)
 	if err != nil {
 		return fmt.Errorf("error while making sql query question: %w", err)
 	}

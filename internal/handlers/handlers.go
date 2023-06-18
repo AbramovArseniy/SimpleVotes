@@ -50,7 +50,7 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(errors.Is(err, storage.ErrNotFound))
 	if errors.Is(err, storage.ErrNotFound) {
-		if err := h.Storage.RegisterUser(u); err != nil {
+		if err := h.Storage.RegisterUser(&u); err != nil {
 			log.Println("error while inserting new user data:", err)
 			http.Error(w, "cannot register user", http.StatusInternalServerError)
 		}
@@ -142,9 +142,10 @@ func (h *Handler) PostQuestionHandler(w http.ResponseWriter, r *http.Request) {
 		UserID:  curUser.Id,
 	}
 	cnt := 1
-	for r.Form.Has("Option " + strconv.Itoa(cnt)) {
+	for r.PostForm.Has("Option " + strconv.Itoa(cnt)) {
 		option := r.PostForm.Get("Option " + strconv.Itoa(cnt))
 		q.Options = append(q.Options, option)
+		cnt++
 	}
 	err = h.Storage.SaveQuestion(q)
 	if err != nil {
