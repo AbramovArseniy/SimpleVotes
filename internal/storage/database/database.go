@@ -53,7 +53,7 @@ func (db *Database) Migrate() error {
 		return fmt.Errorf("could not create driver: %w", err)
 	}
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://./internal/server/database/migrations",
+		"file://../internal/storage/database/migrations",
 		db.Addr, driver)
 	if err != nil {
 		return fmt.Errorf("could not create migration: %w", err)
@@ -129,7 +129,15 @@ func (db *Database) GetPopularQuestions() ([]types.Question, error) {
 	return questions, nil
 }
 
+func (db *Database) GetQuestion(id int) (types.Question, error) {
+	var question types.Question
+	return question, nil
+}
+
 func (db *Database) RegisterUser(u types.User) error {
+	if err := u.GeneratePasswordHash(); err != nil {
+		return fmt.Errorf("cannot generate password hash: %w", err)
+	}
 	_, err := db.DB.Query(RegisterUserStmt, u.Login, u.Password)
 	if err != nil {
 		return fmt.Errorf("error while making sql query question: %w", err)

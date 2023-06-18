@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Address   string `env:"RUN_ADDRESS"`
 	DBAddress string `env:"DATABASE_URI"`
+	JWTSecret string `env:"JWT_SECRET"`
 }
 
 func NewConfig() *Config {
@@ -17,6 +18,7 @@ func NewConfig() *Config {
 
 	flag.StringVar(&cfg.Address, "a", "127.0.0.1:8080", "set server listening address")
 	flag.StringVar(&cfg.DBAddress, "d", "", "set the DB address")
+	flag.StringVar(&cfg.JWTSecret, "js", "", "jwt secret key")
 	flag.Parse()
 
 	if err := env.Parse(&cfg); err != nil {
