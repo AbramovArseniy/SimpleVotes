@@ -113,15 +113,7 @@ func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		HttpOnly: true,
 		MaxAge:   -1,
-		Path:     "/user/login",
-		SameSite: http.SameSiteLaxMode,
-		Name:     "jwt",
-		Value:    "",
-	})
-	http.SetCookie(w, &http.Cookie{
-		HttpOnly: true,
-		MaxAge:   -1,
-		Path:     "/user/register",
+		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 		Name:     "jwt",
 		Value:    "",
