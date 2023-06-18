@@ -30,8 +30,8 @@ func NewAuth(secret string, userStorage storage.Storage) *Auth {
 	}
 }
 
-func (a *Auth) MakeToken(name string) string {
-	_, tokenString, _ := a.JWTAuth.Encode(map[string]interface{}{"login": name})
+func (a *Auth) MakeToken(user types.User) string {
+	_, tokenString, _ := a.JWTAuth.Encode(map[string]interface{}{"id": user.Id, "login": user.Login})
 	return tokenString
 }
 
@@ -42,26 +42,36 @@ func (a *Auth) CheckPassword(user *types.User) error {
 		return fmt.Errorf("error while getting user from database: %w", err)
 	}
 	if user.CheckPasswordHash(userData.Password) {
+		user.Id = userData.Id
 		return nil
 	}
 	return ErrWrongPassword
 }
 
-func (a *Auth) GetUserLogin(r *http.Request) (string, error) {
+func (a *Auth) GetCurUserInfo(r *http.Request) (types.User, error) {
 	jwtCookie, err := r.Cookie("jwt")
 	if errors.Is(err, http.ErrNoCookie) {
-		return "", ErrNotAuthorized
+		return types.User{}, ErrNotAuthorized
 	}
 	if err != nil {
-		return "", fmt.Errorf("error while getting cookie: %w", err)
+		return types.User{}, fmt.Errorf("error while getting cookie: %w", err)
 	}
 	token, err := a.JWTAuth.Decode(jwtCookie.Value)
 	if err != nil {
-		return "", fmt.Errorf("error while decoding cookie: %w", err)
+		return types.User{}, fmt.Errorf("error while decoding cookie: %w", err)
 	}
-	loginInterface, ok := token.Get("login")
+	var ok bool
+	id, ok := token.Get("id")
 	if !ok {
-		return "", ErrNotAuthorized
+		return types.User{}, ErrNotAuthorized
 	}
-	return loginInterface.(string), nil
+	login, ok := token.Get("login")
+	if !ok {
+		return types.User{}, ErrNotAuthorized
+	}
+	var u = types.User{
+		Id:    id.(int),
+		Login: login.(string),
+	}
+	return u, err
 }

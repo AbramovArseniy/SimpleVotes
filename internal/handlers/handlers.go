@@ -43,7 +43,7 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing username or password.", http.StatusBadRequest)
 		return
 	}
-	_, err := h.Storage.GetUserByLogin(u.Login)
+	userData, err := h.Storage.GetUserByLogin(u.Login)
 	if err == nil {
 		http.Error(w, "this username is taken", http.StatusConflict)
 		return
@@ -55,7 +55,7 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "cannot register user", http.StatusInternalServerError)
 		}
 		w.WriteHeader(http.StatusOK)
-		token := h.Auth.MakeToken(u.Login)
+		token := h.Auth.MakeToken(userData)
 
 		http.SetCookie(w, &http.Cookie{
 			HttpOnly: true,
@@ -95,7 +95,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cannot check if password is correct", http.StatusInternalServerError)
 		return
 	}
-	token := h.Auth.MakeToken(u.Login)
+	token := h.Auth.MakeToken(u)
 
 	http.SetCookie(w, &http.Cookie{
 		HttpOnly: true,
@@ -123,7 +123,13 @@ func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) PostQuestionHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	curUser, err := h.Auth.GetCurUserInfo(r)
+	if err != nil {
+		log.Println("cannot get current user's data:", err)
+		http.Error(w, "cannot get logged in user data", http.StatusUnauthorized)
+		return
+	}
+	err = r.ParseForm()
 	if err != nil {
 		log.Println("cannot parse question form:", err)
 		http.Error(w, "cannot parse question form", http.StatusBadRequest)
@@ -133,6 +139,7 @@ func (h *Handler) PostQuestionHandler(w http.ResponseWriter, r *http.Request) {
 		Text:    r.PostForm.Get("Question"),
 		Type:    types.QuestionType(r.PostForm.Get("Question type")),
 		Options: make([]string, 10),
+		UserID:  curUser.Id,
 	}
 	cnt := 1
 	for r.Form.Has("Option " + strconv.Itoa(cnt)) {
@@ -141,7 +148,7 @@ func (h *Handler) PostQuestionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Storage.SaveQuestion(q)
 	if err != nil {
-		log.Println("cannot save question to dataabse:", err)
+		log.Println("cannot save question to database:", err)
 		http.Error(w, "cannot save question to dataabse", http.StatusInternalServerError)
 		return
 	}
