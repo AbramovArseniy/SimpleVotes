@@ -15,15 +15,31 @@ import (
 )
 
 const (
-	SaveQuestionStmt         = `INSERT INTO questions (text, options, user_id) VALUES($1, $2, $3)`
-	GetQuestionsByUserStmt   = `SELECT text, options, user_id FROM questions WHERE user_id=$1`
-	GetUserByLoginStmt       = `SELECT id, password FROM users WHERE login=$1`
-	GetUserByIdStmt          = `SELECT login FROM users WHERE id=$1`
-	GetAnswersWithOptionStmt = `SELECT COUNT(*) FROM answers WHERE question_id=$1 AND option=$2`
-	GetPopularQuestionsStmt  = `SELECT question_id, COUNT(user_id) as cnt_usr, question.text as text FROM answers LEFT JOIN questions ON questions.id = answers.question_id ORDERED BY cnt_usr DESC`
-	GetAllAnswersStmt        = `SELECT COUNT(*) FROM answers WHERE question_id=$1`
-	SaveAnswerStmt           = `INSERT INTO anwers (question_id, options, user_id) VALUES($1, $2, $3)`
-	RegisterUserStmt         = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id`
+	saveQuestionStmt       = `INSERT INTO questions (text, type, options, user_id) VALUES($1, $2, $3, $4)`
+	getQuestionsByUserStmt = `SELECT questions.id, questions.text as text, questions.options, questions.user_id, COALESCE(ans_cnt.cnt_usr,0)
+								FROM questions
+								LEFT JOIN  
+								(SELECT answers.question_id as qid, COUNT(answers.user_id) as cnt_usr
+								FROM answers 
+								GROUP BY answers.question_id) AS ans_cnt
+								ON ans_cnt.qid = questions.id
+								WHERE user_id=$1
+								ORDER BY ans_cnt.cnt_usr`
+	getUserByLoginStmt       = `SELECT id, password FROM users WHERE login=$1`
+	getQuestionByIdStmt      = `SELECT text, type, options, user_id FROM questions WHERE id=$1`
+	getUserByIdStmt          = `SELECT login FROM users WHERE id=$1`
+	getAnswersWithOptionStmt = `SELECT COUNT(*) FROM answers WHERE question_id=$1 AND option=$2`
+	getPopularQuestionsStmt  = `SELECT questions.id, questions.text as text, questions.options, questions.user_id, COALESCE(ans_cnt.cnt_usr,0)
+								FROM questions
+								LEFT JOIN  
+								(SELECT answers.question_id as qid, COUNT(answers.user_id) as cnt_usr
+								FROM answers 
+								GROUP BY answers.question_id) AS ans_cnt
+								ON ans_cnt.qid = questions.id
+								ORDER BY ans_cnt.cnt_usr`
+	getAllAnswersStmt = `SELECT COUNT(*) FROM answers WHERE question_id=$1`
+	saveAnswerStmt    = `INSERT INTO anwers (question_id, options, user_id) VALUES($1, $2, $3)`
+	registerUserStmt  = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id`
 )
 
 type Database struct {
@@ -65,7 +81,7 @@ func (db *Database) Migrate() error {
 }
 
 func (db *Database) SaveQuestion(q types.Question) error {
-	_, err := db.DB.Query(SaveQuestionStmt, q.Text, q.Options, q.UserID)
+	_, err := db.DB.Query(saveQuestionStmt, q.Text, q.Type, q.Options, q.UserID)
 	if err != nil {
 		return fmt.Errorf("error while making sql query question: %w", err)
 	}
@@ -73,7 +89,7 @@ func (db *Database) SaveQuestion(q types.Question) error {
 }
 
 func (db *Database) SaveAnswer(a types.Answer) error {
-	_, err := db.DB.Query(SaveAnswerStmt, a.QuestionId, a.Options, a.UserID)
+	_, err := db.DB.Query(saveAnswerStmt, a.QuestionId, a.Options, a.UserID)
 	if err != nil {
 		return fmt.Errorf("error while making sql query question: %w", err)
 	}
@@ -83,7 +99,7 @@ func (db *Database) SaveAnswer(a types.Answer) error {
 func (db *Database) GetPercentages(q types.Question) ([]int, error) {
 	var percentages []int
 	var totalAns int
-	err := db.DB.QueryRow(GetAllAnswersStmt, q.Id).Scan(&totalAns)
+	err := db.DB.QueryRow(getAllAnswersStmt, q.Id).Scan(&totalAns)
 	if err == sql.ErrNoRows {
 		return nil, storage.ErrNotFound
 	} else if err != nil {
@@ -91,7 +107,7 @@ func (db *Database) GetPercentages(q types.Question) ([]int, error) {
 	}
 	for i := range q.Options {
 		var ans int
-		err := db.DB.QueryRow(GetAnswersWithOptionStmt, q.Id, i).Scan(&ans)
+		err := db.DB.QueryRow(getAnswersWithOptionStmt, q.Id, i).Scan(&ans)
 		if err == sql.ErrNoRows {
 			percentages = append(percentages, 0)
 		} else if err != nil {
@@ -105,7 +121,7 @@ func (db *Database) GetPercentages(q types.Question) ([]int, error) {
 
 func (db *Database) GetQuestionsByUser(user_id int) ([]types.Question, error) {
 	var questions = make([]types.Question, 100)
-	rows, err := db.DB.Query(GetQuestionsByUserStmt, user_id)
+	rows, err := db.DB.Query(getQuestionsByUserStmt, user_id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, storage.ErrNotFound
 	}
@@ -115,7 +131,11 @@ func (db *Database) GetQuestionsByUser(user_id int) ([]types.Question, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var q types.Question
-		rows.Scan(&q.Text, &q.Options, &q.UserID)
+		rows.Scan(&q.Text, &q.Type, &q.Options, &q.UserID)
+		q.Percentages, err = db.GetPercentages(q)
+		if err != nil {
+			return questions, err
+		}
 		questions = append(questions, q)
 	}
 	if rows.Err() != nil {
@@ -126,19 +146,47 @@ func (db *Database) GetQuestionsByUser(user_id int) ([]types.Question, error) {
 
 func (db *Database) GetPopularQuestions() ([]types.Question, error) {
 	var questions []types.Question
+	rows, err := db.DB.Query(getPopularQuestionsStmt)
+	if err != nil {
+		return questions, fmt.Errorf("error while doing query to database: %w", err)
+	}
+	for rows.Next() {
+		var q types.Question
+		var userCnt int
+		err := rows.Scan(&q.Id, &userCnt, &q.Text, &q.Type, &q.Options, &q.UserID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return questions, storage.ErrNotFound
+		}
+		if err != nil {
+			return questions, err
+		}
+		q.Percentages, err = db.GetPercentages(q)
+		if err != nil {
+			return questions, err
+		}
+		questions = append(questions, q)
+
+	}
 	return questions, nil
 }
 
 func (db *Database) GetQuestion(id int) (types.Question, error) {
-	var question types.Question
-	return question, nil
+	var q types.Question
+	err := db.DB.QueryRow(getQuestionByIdStmt, id).Scan(&q.Text, &q.Type, &q.Options)
+	if err == sql.ErrNoRows {
+		return q, storage.ErrNotFound
+	}
+	if err != nil {
+		return q, fmt.Errorf("error while doing query to database: %w", err)
+	}
+	return q, nil
 }
 
 func (db *Database) RegisterUser(u *types.User) error {
 	if err := u.GeneratePasswordHash(); err != nil {
 		return fmt.Errorf("cannot generate password hash: %w", err)
 	}
-	err := db.DB.QueryRow(RegisterUserStmt, u.Login, u.Password).Scan(&u.Id)
+	err := db.DB.QueryRow(registerUserStmt, u.Login, u.Password).Scan(&u.Id)
 	if err != nil {
 		return fmt.Errorf("error while making sql query question: %w", err)
 	}
@@ -147,7 +195,7 @@ func (db *Database) RegisterUser(u *types.User) error {
 
 func (db *Database) GetUserByLogin(login string) (types.User, error) {
 	var user types.User
-	err := db.DB.QueryRow(GetUserByLoginStmt, login).Scan(&user.Id, &user.Password)
+	err := db.DB.QueryRow(getUserByLoginStmt, login).Scan(&user.Id, &user.Password)
 	if err == sql.ErrNoRows {
 		return user, storage.ErrNotFound
 	}
@@ -159,7 +207,7 @@ func (db *Database) GetUserByLogin(login string) (types.User, error) {
 
 func (db *Database) GetUserById(id int) (types.User, error) {
 	var user types.User
-	err := db.DB.QueryRow(GetUserByLoginStmt, id).Scan(&user.Login)
+	err := db.DB.QueryRow(getUserByLoginStmt, id).Scan(&user.Login)
 	if err == sql.ErrNoRows {
 		return user, storage.ErrNotFound
 	}
