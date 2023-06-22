@@ -10,6 +10,7 @@ import (
 	"github.com/AbramovArseniy/SimpleVotes/internal/config"
 	"github.com/AbramovArseniy/SimpleVotes/internal/storage"
 	"github.com/AbramovArseniy/SimpleVotes/internal/storage/database"
+	"github.com/AbramovArseniy/SimpleVotes/internal/templates"
 	"github.com/AbramovArseniy/SimpleVotes/internal/types"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth"
@@ -56,7 +57,6 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.WriteHeader(http.StatusOK)
 		token := h.Auth.MakeToken(userData)
-
 		http.SetCookie(w, &http.Cookie{
 			HttpOnly: true,
 			Expires:  time.Now().Add(7 * 24 * time.Hour),
@@ -157,6 +157,7 @@ func (h *Handler) GetPopularQuestionsHandler(w http.ResponseWriter, r *http.Requ
 	}
 	log.Println(questions)
 	w.WriteHeader(http.StatusOK)
+	templates.IndexTemplate.Execute(w, nil)
 }
 
 func (h *Handler) GetUserProfileHandler(w http.ResponseWriter, r *http.Request) {
@@ -268,6 +269,8 @@ func (h *Handler) PostAnswerHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Route() chi.Router {
 	r := chi.NewRouter()
+	fs := http.FileServer(http.Dir("../internal/static/"))
+	r.Handle("/static/", http.StripPrefix("/static/", fs))
 	r.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(h.Auth.JWTAuth))
 		r.Post("/add-question/", h.PostQuestionHandler)
