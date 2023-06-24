@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -27,7 +26,7 @@ const (
 								WHERE user_id=$1
 								ORDER BY ans_cnt.cnt_usr`
 	getUserByLoginQuery       = `SELECT id, password FROM users WHERE login=$1`
-	getQuestionByIdQuery      = `SELECT text, type, array_to_json(options), user_id FROM questions WHERE id=$1`
+	getQuestionByIdQuery      = `SELECT text, type, user_id FROM questions WHERE id=$1`
 	getUserByIdQuery          = `SELECT login FROM users WHERE id=$1`
 	getAnswersWithOptionQuery = `SELECT COUNT(*) FROM answers WHERE question_id=$1 AND option=$2`
 	getOptionsByQuestionQuery = `SELECT text FROM options WHERE question_id = $1 ORDER BY number`
@@ -40,7 +39,7 @@ const (
 								ON ans_cnt.qid = questions.id
 								ORDER BY ans_cnt.cnt_usr`
 	getAllAnswersQuery = `SELECT COUNT(*) FROM answers WHERE question_id=$1`
-	saveAnswerQuery    = `INSERT INTO anwers (question_id, option, user_id) VALUES($1, $2, $3)`
+	saveAnswerQuery    = `INSERT INTO answers (question_id, option, user_id) VALUES($1, $2, $3)`
 	registerUserQuery  = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id`
 	saveOptionQuery    = `INSERT INTO options (question_id, number, text) VALUES ($1, $2, $3)`
 )
@@ -254,17 +253,16 @@ func (db *Database) GetPopularQuestions() ([]types.Question, error) {
 
 func (db *Database) GetQuestion(id int) (types.Question, error) {
 	var q types.Question
-	var optString string
-	err := db.DB.QueryRow(getQuestionByIdQuery, id).Scan(&q.Text, &q.Type, &optString)
+	err := db.DB.QueryRow(getQuestionByIdQuery, id).Scan(&q.Text, &q.Type, &q.UserID)
 	if err == sql.ErrNoRows {
 		return q, storage.ErrNotFound
 	}
 	if err != nil {
 		return q, fmt.Errorf("error while doing query to database: %w", err)
 	}
-	err = json.Unmarshal([]byte(optString), &q.Options)
+	q.Options, err = db.GetOptions(q.Id)
 	if err != nil {
-		return q, fmt.Errorf("cannot unmarshal options")
+		return q, fmt.Errorf("error while getting options: %w", err)
 	}
 	return q, nil
 }

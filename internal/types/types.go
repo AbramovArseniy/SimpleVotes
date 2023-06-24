@@ -39,3 +39,8 @@ type Answer struct {
 	UserID     int
 	Options    []int
 }
+
+type PopularQuestionsPageData struct {
+	Questions []Question
+	User      User
+}

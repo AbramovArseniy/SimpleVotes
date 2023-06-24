@@ -1,9 +1,36 @@
+<!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="/static/style.css">
+        <!--<link rel="stylesheet" href="/static/style.css">-->
         <title>Simple Votes</title>
     </head>
     <body>
-        <h1>Simple Votes</h1>
+        <main class="main">
+            {{ range $_, $q := .Questions }}
+            <div class="question-container">
+                <div class="question__text-container">
+                    <div class="question__text">{{ $q.Text }}</div>
+                </div>
+                <div class="question__options-container">
+                    <form action="/add-answer/" method="post" enctype="application/x-www-form-urlencoded">
+                    <input type="hidden" name="qid" value="{{ $q.Id }}">
+                    {{ if eq $q.Type "one-option" }}
+                        {{range $index, $text := .Options}}
+                        <input type="radio" name="option" class="question__option" id="question{{ $q.Id }}__option{{ $index }}" value="{{ $index }}">
+                        <label for="question{{ $q.Id }}__option{{ $index }}">{{ $text }}</label>
+                        {{ end }}
+                    {{ end }}
+                    {{ if eq $q.Type "multiple-options" }}
+                        {{range $index, $text := .Options}}
+                        <input type="checkbox" name="option {{ $index }}" class="question__option" id="question{{ $q.Id }}__option{{ $index }}" value="{{ $index }}">
+                        <label for="question{{ $q.Id }}__option{{ $index }}">{{ $text }}</label>
+                        {{ end }}
+                    {{ end }} 
+                    <input type="submit" value="Answer">
+                    </form>
+                </div>
+            </div>
+            {{ end }}
+        </main>
     </body>
 </html>
