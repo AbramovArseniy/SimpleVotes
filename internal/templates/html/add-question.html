@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--<link rel="stylesheet" href="/static/style.css">-->
+        <title>Add question</title>
+    </head>
+    <body>
+        <form method="post" id="form" enctype="application/x-www-form-urlencoded">
+            <input type="number" name="option-number" id="option-number" value="2" hidden>
+            <input type="text" id="question" placeholder="Enter the question" maxlength="256" minlength="1" name="question">
+            <input type="radio" name="type" id="one-option" value="one-option">
+            <label for="one-option">One option</label>
+            <input type="radio" name="type" id="multiple-options" value="multiple-options">
+            <label for="multiple-options">Multiple options</label>
+            <div id="options">
+                <input type="text" placeholder="Enter option" minlength="1" maxlength="128" name="option0" id="option0">
+                <input type="text" placeholder="Enter option" minlength="1" maxlength="128" name="option1" id="option1">
+            </div>
+            <button id="add-option">Add option</button>
+            <button id="delete-option" hidden>Delete option</button>
+            <input type="submit" id="submit" value="Add question" disabled>
+            <script>
+                function CheckInputsLength(evt) {
+                    evt.preventDefault()
+                    flag = true
+                    nodes = document.querySelectorAll("input[type=text]")
+                    submitButton = document.getElementById("submit")
+                    for (var i=0; i<nodes.length; i++) {
+                        maxlength = 128
+                        console.log(nodes[i].value)
+                        if (nodes[i].name == "option-number") {
+                            maxlength = 256
+                        }
+                        if (nodes[i].value.length < 1 || nodes[i].value.length > maxlength) {
+                            flag = false
+                        }
+                    }
+                    nodes = document.querySelectorAll("input[type=radio]")
+                    flag = flag && (nodes[0].checked || nodes[1].checked)
+                    if (!flag) {
+                        submitButton.setAttribute("disabled", true)
+                    } else {
+                        submitButton.removeAttribute("disabled")
+                    }
+                }
+                document.getElementById("one-option").addEventListener("input", CheckInputsLength)
+                document.getElementById("multiple-options").addEventListener("input", CheckInputsLength)
+                document.getElementById("question").addEventListener("input", CheckInputsLength)
+                document.getElementById("option0").addEventListener("input", CheckInputsLength)
+                document.getElementById("option1").addEventListener("input", CheckInputsLength)
+
+                document.getElementById("add-option").addEventListener("click", function(evt){
+                    evt.preventDefault()
+                    optionNum = document.getElementById("option-number")
+                    input = document.createElement("input")
+                    input.type = "text"
+                    input.name = "option" + optionNum.value
+                    input.id = "option" + optionNum.value
+                    input.placeholder="Enter option"
+                    input.minlength="1" 
+                    input.maxlength="128"
+                    document.getElementById("options").appendChild(input)
+
+                    document.getElementById(input.id).addEventListener("input", CheckInputsLength)
+                    optionNum.value = Number(optionNum.value) + 1
+                    if (optionNum.value == 3) {
+                        document.getElementById("delete-option").removeAttribute("hidden")
+                    }
+                    if (optionNum.value == 10) {
+                        evt.target.setAttribute("hidden", true)
+                    }
+                    CheckInputsLength(evt)
+                })
+
+
+                document.getElementById("delete-option").addEventListener("click", function(evt){
+                    evt.preventDefault()
+                    optionNum = document.getElementById("option-number")
+                    optionToDelete = document.getElementById("option"+(optionNum.value - 1))
+                    document.getElementById("options").removeChild(optionToDelete)
+                    optionNum.value = Number(optionNum.value) - 1
+                    if (optionNum.value == 9) {
+                        document.getElementById("add-option").removeAttribute("hidden")
+                    }
+                    if (optionNum.value == 2) {
+                        evt.target.setAttribute("hidden", true)
+                    }
+                    CheckInputsLength(evt)
+                })
+            </script>
+        </form>
+    </body>
+</html>

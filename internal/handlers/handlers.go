@@ -161,6 +161,10 @@ func (h *Handler) GetQuestionHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (h *Handler) GetAddQuestionFormHandler(w http.ResponseWriter, r *http.Request) {
+	templates.AddQuestionTemplate.Execute(w, nil)
+}
+
 func (h *Handler) GetPopularQuestionsHandler(w http.ResponseWriter, r *http.Request) {
 	curUser, err := h.Auth.GetCurUserInfo(r)
 	if err != nil {
@@ -234,16 +238,20 @@ func (h *Handler) PostQuestionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(curUser.Id, curUser.Login)
 	var q = types.Question{
-		Text:    r.PostForm.Get("Question"),
-		Type:    types.QuestionType(r.PostForm.Get("Question type")),
+		Text:    r.PostForm.Get("question"),
+		Type:    types.QuestionType(r.PostForm.Get("type")),
 		Options: make([]string, 0),
 		UserID:  curUser.Id,
 	}
-	cnt := 1
-	for r.PostForm.Has("Option " + strconv.Itoa(cnt)) {
-		option := r.PostForm.Get("Option " + strconv.Itoa(cnt))
+	optionNum, err := strconv.Atoi(r.PostForm.Get("option-number"))
+	if err != nil {
+		log.Println("cannot get option number from form:", err)
+		http.Error(w, "cannot get option number from form", http.StatusInternalServerError)
+		return
+	}
+	for i := 0; i < optionNum; i++ {
+		option := r.PostForm.Get("option" + strconv.Itoa(i))
 		q.Options = append(q.Options, option)
-		cnt++
 	}
 	err = h.Storage.SaveQuestion(q)
 	if err != nil {
@@ -279,6 +287,7 @@ func (h *Handler) PostAnswerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cannot get question data from database", http.StatusInternalServerError)
 		return
 	}
+	log.Println(q.Type, q.Options)
 	if q.Type == types.OneOptionType {
 		if r.PostForm.Has("option") {
 			opt, err := strconv.Atoi(r.PostForm.Get("option"))
@@ -313,6 +322,7 @@ func (h *Handler) Route() chi.Router {
 	r.Group(func(r chi.Router) {
 		r.Use(h.AuthVerifier)
 		r.Post("/add-question/", h.PostQuestionHandler)
+		r.Get("/add-question/", h.GetAddQuestionFormHandler)
 		r.Post("/add-answer/", h.PostAnswerHandler)
 		r.Get("/question/{id}", h.GetQuestionHandler)
 		r.Get("/user/{id}/", h.GetUserProfileHandler)

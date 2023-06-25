@@ -260,7 +260,7 @@ func (db *Database) GetQuestion(id int) (types.Question, error) {
 	if err != nil {
 		return q, fmt.Errorf("error while doing query to database: %w", err)
 	}
-	q.Options, err = db.GetOptions(q.Id)
+	q.Options, err = db.GetOptions(id)
 	if err != nil {
 		return q, fmt.Errorf("error while getting options: %w", err)
 	}
