@@ -12,6 +12,17 @@
                     <div class="question__text">{{ $q.Text }}</div>
                 </div>
                 <div class="question__options-container">
+                    {{ if $q.IsAnswered }}
+                        <div>
+                        {{range $index, $text := $q.Options}}
+                            {{ range $q.Answered }}
+                                {{ if eq $index .}}
+                                <img height="10px" width="10px" src="/static/checked.svg">
+                                {{ end }}
+                            {{ end }}
+                            <div id="question{{ $q.Id }}__option{{ $index }}">{{ $text }}</div>
+                        {{ end }}
+                    {{ else }}
                     <form action="/add-answer/" method="post" enctype="application/x-www-form-urlencoded">
                     <input type="hidden" name="qid" value="{{ $q.Id }}">
                     {{ if eq $q.Type "one-option" }}
@@ -28,6 +39,7 @@
                     {{ end }} 
                     <input type="submit" value="Answer">
                     </form>
+                    {{ end }}
                 </div>
             </div>
             {{ end }}

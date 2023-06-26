@@ -38,10 +38,11 @@ const (
 								GROUP BY answers.question_id) AS ans_cnt
 								ON ans_cnt.qid = questions.id
 								ORDER BY ans_cnt.cnt_usr`
-	getAllAnswersQuery = `SELECT COUNT(*) FROM answers WHERE question_id=$1`
-	saveAnswerQuery    = `INSERT INTO answers (question_id, option, user_id) VALUES($1, $2, $3)`
-	registerUserQuery  = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id`
-	saveOptionQuery    = `INSERT INTO options (question_id, number, text) VALUES ($1, $2, $3)`
+	getAllAnswersQuery    = `SELECT COUNT(*) FROM answers WHERE question_id=$1`
+	saveAnswerQuery       = `INSERT INTO answers (question_id, option, user_id) VALUES($1, $2, $3)`
+	registerUserQuery     = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id`
+	saveOptionQuery       = `INSERT INTO options (question_id, number, text) VALUES ($1, $2, $3)`
+	getAnswersByUserQuery = `SELECT option FROM answers WHERE question_id =$1 AND user_id=$2`
 )
 
 type Database struct {
@@ -276,6 +277,29 @@ func (db *Database) RegisterUser(u *types.User) error {
 		return fmt.Errorf("error while making sql query question: %w", err)
 	}
 	return nil
+}
+
+func (db *Database) GetAnswered(qid, userId int) ([]int, error) {
+	options := make([]int, 0)
+	rows, err := db.DB.Query(getAnswersByUserQuery, qid, userId)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var option int
+		err = rows.Scan(&option)
+		if err != nil {
+			return nil, err
+		}
+		options = append(options, option)
+	}
+	if errors.Is(rows.Err(), sql.ErrNoRows) {
+		return options, nil
+	}
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("rows.Err: %w", err)
+	}
+	return options, nil
 }
 
 func (db *Database) GetUserByLogin(login string) (types.User, error) {

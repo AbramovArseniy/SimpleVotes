@@ -15,6 +15,8 @@ type Question struct {
 	Text        string
 	Options     []string
 	Percentages []int
+	Answered    []int
+	IsAnswered  bool
 	UserID      int
 }
 

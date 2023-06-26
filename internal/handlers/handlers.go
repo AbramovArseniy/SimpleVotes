@@ -185,6 +185,14 @@ func (h *Handler) GetPopularQuestionsHandler(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "cannot get data from database", http.StatusInternalServerError)
 		return
 	}
+	for i, q := range questions {
+		questions[i].Answered, err = h.Storage.GetAnswered(q.Id, curUser.Id)
+		if err != nil {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		questions[i].IsAnswered = len(questions[i].Answered) > 0
+	}
 	data.Questions = questions
 	w.WriteHeader(http.StatusOK)
 	templates.IndexTemplate.Execute(w, data)
