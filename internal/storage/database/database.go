@@ -310,7 +310,7 @@ func (db *Database) GetUserByLogin(login string) (types.User, error) {
 
 func (db *Database) GetUserById(id int) (types.User, error) {
 	var user types.User
-	err := db.DB.QueryRow(getUserByLoginQuery, id).Scan(&user.Login)
+	err := db.DB.QueryRow(getUserByIdQuery, id).Scan(&user.Login)
 	if err == sql.ErrNoRows {
 		return user, storage.ErrNotFound
 	}

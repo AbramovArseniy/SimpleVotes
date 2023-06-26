@@ -173,7 +173,7 @@ func (h *Handler) GetPopularQuestionsHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	var data types.PopularQuestionsPageData
-	data.User = curUser
+	data.LoggedInUser = curUser
 	var questions []types.Question
 	questions, err = h.Storage.GetPopularQuestions()
 	if errors.Is(err, storage.ErrNotFound) {
@@ -199,6 +199,12 @@ func (h *Handler) GetPopularQuestionsHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) GetUserProfileHandler(w http.ResponseWriter, r *http.Request) {
+	curUser, err := h.Auth.GetCurUserInfo(r)
+	if err != nil {
+		log.Println("cannot get current user's data:", err)
+		http.Error(w, "cannot get logged in user data", http.StatusUnauthorized)
+		return
+	}
 	userID, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		log.Println("cannot get question id from url")
@@ -209,6 +215,10 @@ func (h *Handler) GetUserProfileHandler(w http.ResponseWriter, r *http.Request) 
 	if errors.Is(err, storage.ErrNotFound) {
 		http.Error(w, "no such user", http.StatusNotFound)
 		return
+	}
+	data := types.ProfilePageData{
+		LoggedInUser: curUser,
+		User:         user,
 	}
 	if err != nil {
 		log.Println("error while getting popular questions:", err)
@@ -226,9 +236,17 @@ func (h *Handler) GetUserProfileHandler(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "cannot get data from database", http.StatusInternalServerError)
 		return
 	}
-	log.Println("user:", user)
-	log.Println("questions:", questions)
+	for i, q := range questions {
+		questions[i].Answered, err = h.Storage.GetAnswered(q.Id, curUser.Id)
+		if err != nil {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		questions[i].IsAnswered = len(questions[i].Answered) > 0
+	}
+	data.Questions = questions
 	w.WriteHeader(http.StatusOK)
+	templates.ProfileTemplate.Execute(w, data)
 }
 
 func (h *Handler) PostQuestionHandler(w http.ResponseWriter, r *http.Request) {

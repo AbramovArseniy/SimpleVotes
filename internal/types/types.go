@@ -43,6 +43,12 @@ type Answer struct {
 }
 
 type PopularQuestionsPageData struct {
-	Questions []Question
-	User      User
+	Questions    []Question
+	LoggedInUser User
+}
+
+type ProfilePageData struct {
+	Questions    []Question
+	LoggedInUser User
+	User         User
 }
