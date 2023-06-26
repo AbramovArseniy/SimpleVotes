@@ -9,7 +9,7 @@
             {{ range $_, $q := .Questions }}
             <div class="question-container">
                 <div class="question__text-container">
-                    <div class="question__text">{{ $q.Text }}</div>
+                    <h3 class="question__text">{{ $q.Text }}</h3>
                 </div>
                 <div class="question__options-container">
                     {{ if $q.IsAnswered }}
@@ -20,7 +20,7 @@
                                 <img height="10px" width="10px" src="/static/checked.svg">
                                 {{ end }}
                             {{ end }}
-                            <div id="question{{ $q.Id }}__option{{ $index }}">{{ $text }}</div>
+                            <div id="question{{ $q.Id }}__option{{ $index }}">{{ $text }} {{ index $q.Percentages $index }}%</div>
                         {{ end }}
                     {{ else }}
                     <form action="/add-answer/" method="post" enctype="application/x-www-form-urlencoded">
@@ -28,13 +28,13 @@
                     {{ if eq $q.Type "one-option" }}
                         {{range $index, $text := .Options}}
                         <input type="radio" name="option" class="question__option" id="question{{ $q.Id }}__option{{ $index }}" value="{{ $index }}">
-                        <label for="question{{ $q.Id }}__option{{ $index }}">{{ $text }}</label>
+                        <label for="question{{ $q.Id }}__option{{ $index }}">{{ $text }}</label><br>
                         {{ end }}
                     {{ end }}
                     {{ if eq $q.Type "multiple-options" }}
                         {{range $index, $text := .Options}}
                         <input type="checkbox" name="option {{ $index }}" class="question__option" id="question{{ $q.Id }}__option{{ $index }}" value="{{ $index }}">
-                        <label for="question{{ $q.Id }}__option{{ $index }}">{{ $text }}</label>
+                        <label for="question{{ $q.Id }}__option{{ $index }}">{{ $text }}</label><br>
                         {{ end }}
                     {{ end }} 
                     <input type="submit" value="Answer">

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/AbramovArseniy/SimpleVotes/internal/storage"
 	"github.com/AbramovArseniy/SimpleVotes/internal/types"
@@ -28,7 +29,7 @@ const (
 	getUserByLoginQuery       = `SELECT id, password FROM users WHERE login=$1`
 	getQuestionByIdQuery      = `SELECT text, type, user_id FROM questions WHERE id=$1`
 	getUserByIdQuery          = `SELECT login FROM users WHERE id=$1`
-	getAnswersWithOptionQuery = `SELECT COUNT(*) FROM answers WHERE question_id=$1 AND option=$2`
+	getAnswersWithOptionQuery = `SELECT COALESCE(COUNT(*), 0) FROM answers WHERE question_id=$1 AND option=$2`
 	getOptionsByQuestionQuery = `SELECT text FROM options WHERE question_id = $1 ORDER BY number`
 	getPopularQuestionsQuery  = `SELECT questions.id, questions.text as text, questions.type as type, questions.user_id, COALESCE(ans_cnt.cnt_usr,0)
 								FROM questions
@@ -38,7 +39,7 @@ const (
 								GROUP BY answers.question_id) AS ans_cnt
 								ON ans_cnt.qid = questions.id
 								ORDER BY ans_cnt.cnt_usr`
-	getAllAnswersQuery    = `SELECT COUNT(*) FROM answers WHERE question_id=$1`
+	getAllAnswersQuery    = `SELECT COALESCE(COUNT(*), 0) FROM answers WHERE question_id=$1`
 	saveAnswerQuery       = `INSERT INTO answers (question_id, option, user_id) VALUES($1, $2, $3)`
 	registerUserQuery     = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id`
 	saveOptionQuery       = `INSERT INTO options (question_id, number, text) VALUES ($1, $2, $3)`
@@ -158,10 +159,8 @@ func (db *Database) GetPercentages(q types.Question) ([]int, error) {
 	percentages := make([]int, len(q.Options))
 	var totalAns int
 	err := db.DB.QueryRow(getAllAnswersQuery, q.Id).Scan(&totalAns)
+	log.Println(totalAns)
 	if totalAns == 0 {
-		for range q.Options {
-			percentages = append(percentages, 0)
-		}
 		return percentages, nil
 	}
 	if err == sql.ErrNoRows {
@@ -172,19 +171,17 @@ func (db *Database) GetPercentages(q types.Question) ([]int, error) {
 	for i := range q.Options {
 		var ans int
 		err := db.DB.QueryRow(getAnswersWithOptionQuery, q.Id, i).Scan(&ans)
-		if err == sql.ErrNoRows {
-			percentages = append(percentages, 0)
-		} else if err != nil {
+		log.Println(i, ans, (100 * ans / totalAns))
+		if err != nil {
 			return nil, fmt.Errorf("error while getting data from db: %w", err)
-		} else {
-			percentages = append(percentages, (100*ans)/totalAns)
 		}
+		percentages[i] = (100 * ans) / totalAns
 	}
 	return percentages, nil
 }
 
 func (db *Database) GetQuestionsByUser(user_id int) ([]types.Question, error) {
-	var questions = make([]types.Question, 100)
+	var questions = make([]types.Question, 0)
 	rows, err := db.DB.Query(getQuestionsByUserQuery, user_id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, storage.ErrNotFound
