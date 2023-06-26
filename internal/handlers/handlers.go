@@ -326,7 +326,7 @@ func (h *Handler) PostAnswerHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Route() chi.Router {
 	r := chi.NewRouter()
 	fs := http.FileServer(http.Dir("../internal/static/"))
-	r.Handle("/static/", http.StripPrefix("/static/", fs))
+	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 	r.Group(func(r chi.Router) {
 		r.Use(h.AuthVerifier)
 		r.Post("/add-question/", h.PostQuestionHandler)

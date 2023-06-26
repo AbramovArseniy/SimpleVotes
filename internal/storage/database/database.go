@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/AbramovArseniy/SimpleVotes/internal/storage"
 	"github.com/AbramovArseniy/SimpleVotes/internal/types"
@@ -159,7 +158,6 @@ func (db *Database) GetPercentages(q types.Question) ([]int, error) {
 	percentages := make([]int, len(q.Options))
 	var totalAns int
 	err := db.DB.QueryRow(getAllAnswersQuery, q.Id).Scan(&totalAns)
-	log.Println(totalAns)
 	if totalAns == 0 {
 		return percentages, nil
 	}
@@ -171,7 +169,6 @@ func (db *Database) GetPercentages(q types.Question) ([]int, error) {
 	for i := range q.Options {
 		var ans int
 		err := db.DB.QueryRow(getAnswersWithOptionQuery, q.Id, i).Scan(&ans)
-		log.Println(i, ans, (100 * ans / totalAns))
 		if err != nil {
 			return nil, fmt.Errorf("error while getting data from db: %w", err)
 		}
