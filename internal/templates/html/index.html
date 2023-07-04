@@ -12,6 +12,7 @@
                     <a class="navbar__link" href="/">Main page</a>
                     <a class="navbar__link" href="/add-question/">Add question</a>
                     <a class="navbar__link" href="/user/{{ .LoggedInUser.Id }}/">Profile</a>
+                    <a class="navbar__link" href="/user/logout/">Log out</a>
                 </nav>
             </div>
         </header>
@@ -57,12 +58,12 @@
                                     }
                                 }
                                 if (!flag) {
-                                    if (!submitButton.classList.contains("button-disabled")){
-                                        submitButton.classList.add("button-disabled")
+                                    if (!submitButton.classList.contains("button_disabled")){
+                                        submitButton.classList.add("button_disabled")
                                     }
                                     submitButton.setAttribute("disabled", true)
                                 } else {
-                                    submitButton.classList.remove("button-disabled")
+                                    submitButton.classList.remove("button_disabled")
                                     submitButton.removeAttribute("disabled", true)
                                 }
                             })
@@ -88,12 +89,12 @@
                                     }
                                 }
                                 if (!flag) {
-                                    if (!submitButton.classList.contains("button-disabled")){
-                                        submitButton.classList.add("button-disabled")
+                                    if (!submitButton.classList.contains("button_disabled")){
+                                        submitButton.classList.add("button_disabled")
                                     }
                                     submitButton.setAttribute("disabled", true)
                                 } else {
-                                    submitButton.classList.remove("button-disabled")
+                                    submitButton.classList.remove("button_disabled")
                                     submitButton.removeAttribute("disabled", true)
                                 }
                             })
@@ -101,7 +102,7 @@
                         {{ end }}
                     {{ end }} 
                     </div>
-                    <input type="submit" class="options__form__answer-button button-disabled" id="answer-button{{ $q.Id }}"value="Answer" disabled>
+                    <input type="submit" class="options__form__answer-button button_disabled" id="answer-button{{ $q.Id }}"value="Answer" disabled>
                     </form>
                     {{ end }}
                 </div>
