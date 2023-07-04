@@ -4,12 +4,18 @@
 
 .main{
     margin-top: 80px;
+    padding-top: 20px;
 }
 
 .questions{
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.text-input{
+    border: 0;
+    border-bottom: 2px solid #000;
 }
 
 .question-container{
@@ -86,12 +92,6 @@
     cursor: pointer;
 }
 
-.options__form__answer-button-disabled{
-    background-color: #bcbbfa; 
-    color:#888;
-    cursor:default;
-}
-
 .header-container{
     width: 100vw;
     height: 80px;
@@ -125,9 +125,110 @@
     justify-content: space-around;
 }
 
+
 .navbar__link{
     color: #FFF;
     font-size: 24px;
     line-height: 45px;
     font-family: Inter, sans-serif;
+    text-decoration: none;
+}
+
+.question-form-container{
+    margin: 20px auto;
+}
+
+.question-form{
+    width: 100%;
+}
+
+.question-form__question-info{
+    margin: 10px 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.question-input{
+    height: 32px;
+    font-size: 20px;
+    width: 50%;
+}
+
+.question-form__question-types{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 135px;
+}
+
+.question-form__question-type{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.question-form__submit-button{
+    width: calc(100% - 40px);
+    margin: 10px 20px 0 20px;
+    height: 30px;
+    padding:0;
+    background-color: #001C7E;
+    color: #fff;
+    border-radius: 5px;
+    align-self: center;
+    cursor: pointer;
+}
+
+.question-form__buttons{
+    margin: 20px auto 0 auto;
+    width: calc(100% - 40px);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.question-form__button{
+    width: 48%;
+    height: 30px;
+    padding:0;
+    background-color: #001C7E;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.button_disabled{
+    background-color: #bcbbfa; 
+    color:#888;
+    cursor:default;
+}
+
+.question-form__options-info{
+    display: flex;
+    flex-direction: column;
+    margin: 10px 20px;
+    width: calc(100% - 40px);
+}
+
+.option-input{
+    width: 100%;
+    height: 32px;
+    font-size: 18px;
+    margin-top: 10px;
+    padding:0;
+    border-bottom: 1.7px solid #000;
+}
+
+.question-form__radio{
+    height: 16px;
+    margin: 0;
+    width: 16px;
+}
+
+.question-form__type-text{
+    font-family: Inter, sans-serif; 
+    font-size: 16px;
+    margin-left: 6px;
 }

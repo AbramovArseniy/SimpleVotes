@@ -9,9 +9,9 @@
             <div class="header">
                 <div class="logo" scr="/static/logo.svg"></div>
                 <nav class="navbar">
-                    <div class="navbar__link" href="/">Main page</div>
-                    <div class="navbar__link" href="/add-question/">Add question</div>
-                    <div class="navbar__link" href="/user/{{ .LoggedInUser.Id }}/">Profile</div>
+                    <a class="navbar__link" href="/">Main page</a>
+                    <a class="navbar__link" href="/add-question/">Add question</a>
+                    <a class="navbar__link" href="/user/{{ .LoggedInUser.Id }}/">Profile</a>
                 </nav>
             </div>
         </header>
@@ -57,12 +57,12 @@
                                     }
                                 }
                                 if (!flag) {
-                                    if (!submitButton.classList.contains("options__form__answer-button-disabled")){
-                                        submitButton.classList.add("options__form__answer-button-disabled")
+                                    if (!submitButton.classList.contains("button-disabled")){
+                                        submitButton.classList.add("button-disabled")
                                     }
                                     submitButton.setAttribute("disabled", true)
                                 } else {
-                                    submitButton.classList.remove("options__form__answer-button-disabled")
+                                    submitButton.classList.remove("button-disabled")
                                     submitButton.removeAttribute("disabled", true)
                                 }
                             })
@@ -88,12 +88,12 @@
                                     }
                                 }
                                 if (!flag) {
-                                    if (!submitButton.classList.contains("options__form__answer-button-disabled")){
-                                        submitButton.classList.add("options__form__answer-button-disabled")
+                                    if (!submitButton.classList.contains("button-disabled")){
+                                        submitButton.classList.add("button-disabled")
                                     }
                                     submitButton.setAttribute("disabled", true)
                                 } else {
-                                    submitButton.classList.remove("options__form__answer-button-disabled")
+                                    submitButton.classList.remove("button-disabled")
                                     submitButton.removeAttribute("disabled", true)
                                 }
                             })
@@ -101,7 +101,7 @@
                         {{ end }}
                     {{ end }} 
                     </div>
-                    <input type="submit" class="options__form__answer-button options__form__answer-button-disabled" id="answer-button{{ $q.Id }}"value="Answer" disabled>
+                    <input type="submit" class="options__form__answer-button button-disabled" id="answer-button{{ $q.Id }}"value="Answer" disabled>
                     </form>
                     {{ end }}
                 </div>

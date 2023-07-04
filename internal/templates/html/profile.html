@@ -9,16 +9,16 @@
             <div class="header">
                 <div class="logo" scr="/static/logo.svg"></div>
                 <nav class="navbar">
-                    <div class="navbar__link" href="/">Main page</div>
-                    <div class="navbar__link" href="/add-question/">Add question</div>
-                    <div class="navbar__link" href="/user/{{ .LoggedInUser.Id }}/">Profile</div>
+                    <a class="navbar__link" href="/">Main page</a>
+                    <a class="navbar__link" href="/add-question/">Add question</a>
+                    <a class="navbar__link" href="/user/{{ .LoggedInUser.Id }}/">Profile</a>
                 </nav>
             </div>
         </header>
+        <main class="main">
         <div class="user-info">
             <h1 class="user-info__username">{{ .User.Login }}</h1>
         </div>
-        <main class="main">
             {{ range $_, $q := .Questions }}
             <div class="question-container">
                 <div class="question__text-container">

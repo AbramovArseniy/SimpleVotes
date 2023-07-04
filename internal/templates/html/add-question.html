@@ -1,24 +1,46 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--<link rel="stylesheet" href="/static/style.css">-->
+        <link rel="stylesheet" href="/static/style.css">
         <title>Add question</title>
     </head>
     <body>
-        <form method="post" id="form" enctype="application/x-www-form-urlencoded">
-            <input type="number" name="option-number" id="option-number" value="2" hidden>
-            <input type="text" id="question" placeholder="Enter the question" maxlength="256" minlength="1" name="question">
-            <input type="radio" name="type" id="one-option" value="one-option">
-            <label for="one-option">One option</label>
-            <input type="radio" name="type" id="multiple-options" value="multiple-options">
-            <label for="multiple-options">Multiple options</label>
-            <div id="options">
-                <input type="text" placeholder="Enter option" minlength="1" maxlength="128" name="option0" id="option0">
-                <input type="text" placeholder="Enter option" minlength="1" maxlength="128" name="option1" id="option1">
+        <header class="header-container">
+            <div class="header">
+                <div class="logo" scr="/static/logo.svg"></div>
+                <nav class="navbar">
+                    <a class="navbar__link" href="/">Main page</a>
+                    <a class="navbar__link" href="/add-question/">Add question</a>
+                    <a class="navbar__link" href="/user/{{ .LoggedInUser.Id }}/">Profile</a>
+                </nav>
             </div>
-            <button id="add-option">Add option</button>
-            <button id="delete-option" hidden>Delete option</button>
-            <input type="submit" id="submit" value="Add question" disabled>
+        </header>
+        <main class="main">
+        <div class="question-form-container question-container">
+        <form method="post" id="form" class="question-form" enctype="application/x-www-form-urlencoded">
+            <div class="question-form__question-info">
+                <input type="number" name="option-number" id="option-number" value="2" hidden>
+                <input type="text" class="text-input question-input" id="question" placeholder="Enter the question" maxlength="256" minlength="1" name="question">
+                <div class="question-form__question-types">
+                    <div class="question-form__question-type">
+                        <input class="question-form__radio" type="radio" name="type" id="one-option" value="one-option">
+                        <lable class="question-form__type-text" for="one-option">One option</label>
+                    </div>
+                    <div class="question-form__question-type">
+                        <input  class="question-form__radio" type="radio" name="type" id="multiple-options" value="multiple-options">
+                        <label class="question-form__type-text" for="multiple-options">Multiple options</label>
+                    </div>
+                </div>
+            </div>
+            <div id="options" class="question-form__options-info">
+                <input type="text" class="text-input option-input" placeholder="Enter option" minlength="1" maxlength="128" name="option0" id="option0">
+                <input type="text" class="text-input option-input" placeholder="Enter option" minlength="1" maxlength="128" name="option1" id="option1">
+            </div>
+            <div class="question-form__buttons">
+                <button class="question-form__add-option-button question-form__button" id="add-option">Add option</button>
+                <button class="question-form__delete-option-button question-form__button button_disabled" id="delete-option" disabled>Delete option</button>
+            </div>
+            <input type="submit" class="question-form__submit-button button_disabled" id="submit" value="Add question" disabled>
             <script>
                 function CheckInputsLength(evt) {
                     evt.preventDefault()
@@ -27,7 +49,6 @@
                     submitButton = document.getElementById("submit")
                     for (var i=0; i<nodes.length; i++) {
                         maxlength = 128
-                        console.log(nodes[i].value)
                         if (nodes[i].name == "option-number") {
                             maxlength = 256
                         }
@@ -38,8 +59,12 @@
                     nodes = document.querySelectorAll("input[type=radio]")
                     flag = flag && (nodes[0].checked || nodes[1].checked)
                     if (!flag) {
+                        if (!submitButton.classList.contains("button_disabled")){
+                            submitButton.classList.add("button_disabled")
+                        }
                         submitButton.setAttribute("disabled", true)
                     } else {
+                        submitButton.classList.remove("button_disabled")
                         submitButton.removeAttribute("disabled")
                     }
                 }
@@ -48,8 +73,12 @@
                 document.getElementById("question").addEventListener("input", CheckInputsLength)
                 document.getElementById("option0").addEventListener("input", CheckInputsLength)
                 document.getElementById("option1").addEventListener("input", CheckInputsLength)
+                document.getElementById("delete-option").addEventListener("click", deleteOption)
+                document.getElementById("add-option").addEventListener("click", addOption)
 
-                document.getElementById("add-option").addEventListener("click", function(evt){
+
+
+                function addOption(evt){
                     evt.preventDefault()
                     optionNum = document.getElementById("option-number")
                     input = document.createElement("input")
@@ -59,35 +88,47 @@
                     input.placeholder="Enter option"
                     input.minlength="1" 
                     input.maxlength="128"
+                    input.classList.add("text-input")
+                    input.classList.add("option-input")
                     document.getElementById("options").appendChild(input)
 
                     document.getElementById(input.id).addEventListener("input", CheckInputsLength)
                     optionNum.value = Number(optionNum.value) + 1
                     if (optionNum.value == 3) {
-                        document.getElementById("delete-option").removeAttribute("hidden")
+                        document.getElementById("delete-option").removeAttribute("disabled")
+                        document.getElementById("delete-option").classList.remove("button_disabled")
                     }
                     if (optionNum.value == 10) {
-                        evt.target.setAttribute("hidden", true)
+                        evt.target.setAttribute("disabled", true)
+                        if (!evt.target.classList.contains("button_disabled")){
+                            evt.target.classList.add("button_disabled")
+                        }
                     }
                     CheckInputsLength(evt)
-                })
+                }
 
-
-                document.getElementById("delete-option").addEventListener("click", function(evt){
+                function deleteOption(evt){
                     evt.preventDefault()
                     optionNum = document.getElementById("option-number")
                     optionToDelete = document.getElementById("option"+(optionNum.value - 1))
                     document.getElementById("options").removeChild(optionToDelete)
                     optionNum.value = Number(optionNum.value) - 1
                     if (optionNum.value == 9) {
-                        document.getElementById("add-option").removeAttribute("hidden")
+                        document.getElementById("add-option").removeAttribute("disabled")
+                        document.getElementById("add-option").classList.remove("button_disabled")
                     }
                     if (optionNum.value == 2) {
-                        evt.target.setAttribute("hidden", true)
+                        evt.target.setAttribute("disabled", true)
+                        if (!evt.target.classList.contains("button_disabled")){
+                            evt.target.classList.add("button_disabled")
+                        }
                     }
                     CheckInputsLength(evt)
-                })
+                }
+
+                
             </script>
+            </main>
         </form>
     </body>
 </html>
