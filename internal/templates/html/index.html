@@ -5,6 +5,16 @@
         <title>Simple Votes</title>
     </head>
     <body class="page">
+        <header class="header-container">
+            <div class="header">
+                <div class="logo" scr="/static/logo.svg"></div>
+                <nav class="navbar">
+                    <div class="navbar__link" href="/">Main page</div>
+                    <div class="navbar__link" href="/add-question/">Add question</div>
+                    <div class="navbar__link" href="/user/{{ .LoggedInUser.Id }}/">Profile</div>
+                </nav>
+            </div>
+        </header>
         <main class="main">
             <div class="questions">
             {{ range $_, $q := .Questions }}

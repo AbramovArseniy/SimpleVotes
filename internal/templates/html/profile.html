@@ -5,6 +5,16 @@
         <title>{{ .User.Login }}</title>
     </head>
     <body>
+        <header class="header-container">
+            <div class="header">
+                <div class="logo" scr="/static/logo.svg"></div>
+                <nav class="navbar">
+                    <div class="navbar__link" href="/">Main page</div>
+                    <div class="navbar__link" href="/add-question/">Add question</div>
+                    <div class="navbar__link" href="/user/{{ .LoggedInUser.Id }}/">Profile</div>
+                </nav>
+            </div>
+        </header>
         <div class="user-info">
             <h1 class="user-info__username">{{ .User.Login }}</h1>
         </div>
