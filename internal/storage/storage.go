@@ -16,11 +16,12 @@ type Storage interface {
 	SaveQuestion(types.Question) error
 	SaveAnswer(types.Answer) error
 	GetPercentages(types.Question) ([]int, error)
-	GetQuestion(types.Question) (types.Question, error)
-	RegisterUser(types.User) error
-	GetUserData(login string) (types.User, error)
-	GetUserDataById(id int) (types.User, error)
+	GetQuestion(id int) (types.Question, error)
+	RegisterUser(*types.User) error
+	GetUserByLogin(login string) (types.User, error)
+	GetUserById(id int) (types.User, error)
 	GetQuestionsByUser(id int) ([]types.Question, error)
-	GetPopularQuestions(id int) ([]types.Question, error)
+	GetPopularQuestions() ([]types.Question, error)
+	GetAnswered(qid, userId int) ([]int, error)
 	Close()
 }
