@@ -73,7 +73,6 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("error while inserting new user data:", err)
 			http.Error(w, "cannot register user", http.StatusInternalServerError)
 		}
-		w.WriteHeader(http.StatusOK)
 		token := h.Auth.MakeToken(userData)
 		http.SetCookie(w, &http.Cookie{
 			HttpOnly: true,
@@ -83,7 +82,7 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			Name:     "jwt",
 			Value:    token,
 		})
-		//http.Redirect(w, r, "/profile", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	log.Println("error while getting users data:", err)
@@ -294,6 +293,7 @@ func (h *Handler) PostQuestionHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cannot save question to dataabse", http.StatusInternalServerError)
 		return
 	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *Handler) PostAnswerHandler(w http.ResponseWriter, r *http.Request) {
@@ -346,8 +346,7 @@ func (h *Handler) PostAnswerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cannot save answer to database", http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	//http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *Handler) Route() chi.Router {

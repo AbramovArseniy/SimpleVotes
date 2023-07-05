@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/AbramovArseniy/SimpleVotes/internal/storage"
 	"github.com/AbramovArseniy/SimpleVotes/internal/types"
@@ -24,7 +25,7 @@ const (
 								GROUP BY answers.question_id) AS ans_cnt
 								ON ans_cnt.qid = questions.id
 								WHERE user_id=$1
-								ORDER BY ans_cnt.cnt_usr`
+								ORDER BY ans_cnt.cnt_usr DESC`
 	getUserByLoginQuery       = `SELECT id, password FROM users WHERE login=$1`
 	getQuestionByIdQuery      = `SELECT text, type, user_id FROM questions WHERE id=$1`
 	getUserByIdQuery          = `SELECT login FROM users WHERE id=$1`
@@ -37,7 +38,7 @@ const (
 								FROM answers 
 								GROUP BY answers.question_id) AS ans_cnt
 								ON ans_cnt.qid = questions.id
-								ORDER BY ans_cnt.cnt_usr`
+								ORDER BY ans_cnt.cnt_usr DESC`
 	getAllAnswersQuery    = `SELECT COALESCE(COUNT(*), 0) FROM answers WHERE question_id=$1`
 	saveAnswerQuery       = `INSERT INTO answers (question_id, option, user_id) VALUES($1, $2, $3)`
 	registerUserQuery     = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id`
@@ -226,6 +227,7 @@ func (db *Database) GetPopularQuestions() ([]types.Question, error) {
 		if err != nil {
 			return nil, err
 		}
+		log.Println(q.Text, userCnt)
 		q.Options, err = db.GetOptions(q.Id)
 		if err != nil {
 			return nil, fmt.Errorf("error while getting options: %w", err)
