@@ -5,10 +5,22 @@
         <title>{{ .User.Login }}</title>
     </head>
     <body>
-        <div class="user-info">
+        <header class="header-container">
+            <div class="header">
+                <div class="logo" scr="/static/logo.svg"></div>
+                <nav class="navbar">
+                    <a class="navbar__link" href="/">Main page</a>
+                    <a class="navbar__link" href="/add-question/">Add question</a>
+                    <a class="navbar__link" href="/user/{{ .LoggedInUser.Id }}/">Profile</a>
+                    <a class="navbar__link" href="/user/logout/">Log out</a>
+                </nav>
+            </div>
+        </header>
+        <main class="main">
+        <div class="user-info-container">
             <h1 class="user-info__username">{{ .User.Login }}</h1>
         </div>
-        <main class="main">
+        <div class="questions">
             {{ range $_, $q := .Questions }}
             <div class="question-container">
                 <div class="question__text-container">
@@ -16,36 +28,90 @@
                 </div>
                 <div class="question__options-container">
                     {{ if $q.IsAnswered }}
-                        <div>
                         {{range $index, $text := $q.Options}}
+                        <div class="option-container">
                             {{ range $q.Answered }}
                                 {{ if eq $index .}}
-                                <img height="10px" width="10px" src="/static/checked.svg">
+                                <img height="10px" class="option__checkbox option_checked-image" width="10px" src="/static/checked.svg">
                                 {{ end }}
                             {{ end }}
-                            <div id="question{{ $q.Id }}__option{{ $index }}">{{ $text }} {{ index $q.Percentages $index }}%</div>
+                            <div id="question{{ $q.Id }}__option{{ $index }}" class="option-text">{{ $text }}</div> 
+                            <div class="option-percentage">{{ index $q.Percentages $index }}%</div><br>
+                        </div>
                         {{ end }}
                     {{ else }}
-                    <form action="/add-answer/" method="post" enctype="application/x-www-form-urlencoded">
+                    <form action="/add-answer/"  class="options__form" method="post" enctype="application/x-www-form-urlencoded">
+                    <div class="question__options-container">
                     <input type="hidden" name="qid" value="{{ $q.Id }}">
                     {{ if eq $q.Type "one-option" }}
                         {{range $index, $text := .Options}}
-                        <input type="radio" name="option" class="question__option" id="question{{ $q.Id }}__option{{ $index }}" value="{{ $index }}">
-                        <label for="question{{ $q.Id }}__option{{ $index }}">{{ $text }}</label><br>
+                        <div class="option-container">
+                            <input type="radio" name="option" class="option__checkbox option_radio option-checkbox{{ $q.Id }}" id="question{{ $q.Id }}__option{{ $index }}" value="{{ $index }}">
+                            <div class="option-text options__form__option-text">{{ $text }}</div><br>
+                        </div>
+                        <script>
+                            document.getElementById("question{{ $q.Id }}__option{{ $index }}").addEventListener("input", function(){
+                                flag = false
+                                submitButton = document.getElementById("answer-button{{ $q.Id }}")
+                                nodes = document.querySelectorAll(".option-checkbox{{ $q.Id }}")
+                                for (var i=0; i<nodes.length; i++){
+                                    if (nodes[i].checked){
+                                        flag = true
+                                        break
+                                    }
+                                }
+                                if (!flag) {
+                                    if (!submitButton.classList.contains("button_disabled")){
+                                        submitButton.classList.add("button_disabled")
+                                    }
+                                    submitButton.setAttribute("disabled", true)
+                                } else {
+                                    submitButton.classList.remove("button_disabled")
+                                    submitButton.removeAttribute("disabled", true)
+                                }
+                            })
+                        </script>
                         {{ end }}
+                        
                     {{ end }}
                     {{ if eq $q.Type "multiple-options" }}
                         {{range $index, $text := .Options}}
-                        <input type="checkbox" name="option {{ $index }}" class="question__option" id="question{{ $q.Id }}__option{{ $index }}" value="{{ $index }}">
-                        <label for="question{{ $q.Id }}__option{{ $index }}">{{ $text }}</label><br>
+                        <div class="option-container">
+                            <input type="checkbox" name="option {{ $index }}" class="question__option option__checkbox option-checkbox{{ $q.Id }}" id="question{{ $q.Id }}__option{{ $index }}" value="{{ $index }}">
+                            <div class="option-text options__form__option-text">{{ $text }}</div><br>
+                        </div>
+                        <script>
+                            document.getElementById("question{{ $q.Id }}__option{{ $index }}").addEventListener("input", function(){
+                                flag = false
+                                submitButton = document.getElementById("answer-button{{ $q.Id }}")
+                                nodes = document.querySelectorAll(".option-checkbox{{ $q.Id }}")
+                                for (var i=0; i<nodes.length; i++){
+                                    if (nodes[i].checked){
+                                        flag = true
+                                        break
+                                    }
+                                }
+                                if (!flag) {
+                                    if (!submitButton.classList.contains("button_disabled")){
+                                        submitButton.classList.add("button_disabled")
+                                    }
+                                    submitButton.setAttribute("disabled", true)
+                                } else {
+                                    submitButton.classList.remove("button_disabled")
+                                    submitButton.removeAttribute("disabled", true)
+                                }
+                            })
+                        </script>
                         {{ end }}
                     {{ end }} 
-                    <input type="submit" value="Answer">
+                    </div>
+                    <input type="submit" class="options__form__answer-button button_disabled" id="answer-button{{ $q.Id }}"value="Answer" disabled>
                     </form>
                     {{ end }}
                 </div>
             </div>
             {{ end }}
+            </div>
         </main>
     </body>
 </html>

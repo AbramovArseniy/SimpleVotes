@@ -162,7 +162,16 @@ func (h *Handler) GetQuestionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetAddQuestionFormHandler(w http.ResponseWriter, r *http.Request) {
-	templates.AddQuestionTemplate.Execute(w, nil)
+	curUser, err := h.Auth.GetCurUserInfo(r)
+	if err != nil {
+		log.Println("cannot get current user's data:", err)
+		http.Error(w, "cannot get logged in user data", http.StatusUnauthorized)
+		return
+	}
+	data := types.AddQuestionPageData{
+		LoggedInUser: curUser,
+	}
+	templates.AddQuestionTemplate.Execute(w, data)
 }
 
 func (h *Handler) GetPopularQuestionsHandler(w http.ResponseWriter, r *http.Request) {

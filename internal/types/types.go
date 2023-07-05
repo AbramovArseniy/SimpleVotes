@@ -52,3 +52,7 @@ type ProfilePageData struct {
 	LoggedInUser User
 	User         User
 }
+
+type AddQuestionPageData struct {
+	LoggedInUser User
+}
