@@ -22,5 +22,6 @@ type Storage interface {
 	GetUserById(id int) (types.User, error)
 	GetQuestionsByUser(id int) ([]types.Question, error)
 	GetPopularQuestions() ([]types.Question, error)
+	GetAnswered(qid, userId int) ([]int, error)
 	Close()
 }

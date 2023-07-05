@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="/static/style.css">
+        <title>Authorization</title>
+    </head>
+    <body class="page">
+        <form class="auth-form" method="post" enctype="application/x-www-form-urlencoded">
+            <input class="text-input auth-input" type="text" placeholder="Enter your login" name="login" id="login">
+            <input class="text-input auth-input" type="password" placeholder="Enter your password" name="password" id="password"> 
+            <input  class="auth-submit-button button_disabled" type="submit" value="Submit" id="submit" disabled>
+            <script>
+                function CheckInputsLength(evt) {
+                    evt.preventDefault()
+                    flag = true
+                    nodes = document.querySelectorAll("input[type=text]")
+                    submitButton = document.getElementById("submit")
+                    for (var i=0; i<nodes.length; i++) {
+                        maxlength = 128
+                        if (nodes[i].name == "option-number") {
+                            maxlength = 256
+                        }
+                        if (nodes[i].value.length < 1 || nodes[i].value.length > maxlength) {
+                            flag = false
+                        }
+                    }
+                    if (!flag) {
+                        if (!submitButton.classList.contains("button_disabled")){
+                            submitButton.classList.add("button_disabled")
+                        }
+                        submitButton.setAttribute("disabled", true)
+                    } else {
+                        submitButton.classList.remove("button_disabled")
+                        submitButton.removeAttribute("disabled")
+                    }
+                }
+                document.getElementById("login").addEventListener("input", CheckInputsLength)
+                document.getElementById("password").addEventListener("input", CheckInputsLength)
+            </script>
+        </form>
+    </body>
+</html>

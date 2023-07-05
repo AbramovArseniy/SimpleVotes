@@ -15,6 +15,8 @@ type Question struct {
 	Text        string
 	Options     []string
 	Percentages []int
+	Answered    []int
+	IsAnswered  bool
 	UserID      int
 }
 
@@ -38,4 +40,19 @@ type Answer struct {
 	QuestionId int
 	UserID     int
 	Options    []int
+}
+
+type PopularQuestionsPageData struct {
+	Questions    []Question
+	LoggedInUser User
+}
+
+type ProfilePageData struct {
+	Questions    []Question
+	LoggedInUser User
+	User         User
+}
+
+type AddQuestionPageData struct {
+	LoggedInUser User
 }
