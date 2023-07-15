@@ -73,7 +73,7 @@ func (db *Database) Migrate() error {
 		return fmt.Errorf("could not create driver: %w", err)
 	}
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://../internal/storage/database/migrations",
+		"file://./internal/storage/database/migrations",
 		db.Addr, driver)
 	if err != nil {
 		return fmt.Errorf("could not create migration: %w", err)
